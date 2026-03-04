@@ -1,10 +1,16 @@
 import express from 'express';
+import { readFile } from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { createServer as createViteServer } from 'vite';
-import db from './server/db.js';
+import db from './db.js';
+
+const frontendRoot = fileURLToPath(new URL('../frontend', import.meta.url));
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  const PORT = Number(process.env.PORT ?? 5173);
+  const HOST = process.env.HOST ?? '127.0.0.1';
 
   app.use(express.json());
 
@@ -39,11 +45,11 @@ async function startServer() {
     
     if (user) {
       const { senha, ...userWithoutPassword } = user;
-      logAuditoria(user.id, user.empresa_id, 'LOGIN_SUCESSO', `Usuário ${user.nome} logou no sistema`);
+      logAuditoria(user.id, user.empresa_id, 'LOGIN_SUCESSO', `Usu�rio ${user.nome} logou no sistema`);
       res.json({ token: 'mock-jwt-token-' + user.id, user: userWithoutPassword });
     } else {
       logAuditoria(null, null, 'LOGIN_FALHA', `Tentativa de login falhou para o email/cpf: ${email}`);
-      res.status(401).json({ error: 'Credenciais inválidas' });
+      res.status(401).json({ error: 'Credenciais inv�lidas' });
     }
   });
 
@@ -56,31 +62,31 @@ async function startServer() {
     const { nome, cpf, senha, empresa_id } = req.body;
     
     if (!nome || !cpf || !senha || !empresa_id) {
-      return res.status(400).json({ error: 'Todos os campos são obrigatórios' });
+      return res.status(400).json({ error: 'Todos os campos s�o obrigat�rios' });
     }
 
     try {
       // Check if CPF (stored in email column) already exists
       const existingUser = db.prepare('SELECT id FROM usuarios WHERE email = ?').get(cpf);
       if (existingUser) {
-        return res.status(400).json({ error: 'CPF já cadastrado' });
+        return res.status(400).json({ error: 'CPF j� cadastrado' });
       }
 
       const insert = db.prepare('INSERT INTO usuarios (nome, email, senha, role, empresa_id) VALUES (?, ?, ?, ?, ?)');
       const result = insert.run(nome, cpf, senha, 'EMPLOYEE', empresa_id);
       
-      logAuditoria(result.lastInsertRowid as number, empresa_id, 'CADASTRO_FUNCIONARIO', `Novo funcionário cadastrado: ${nome} (CPF: ${cpf})`);
+      logAuditoria(result.lastInsertRowid as number, empresa_id, 'CADASTRO_FUNCIONARIO', `Novo funcion�rio cadastrado: ${nome} (CPF: ${cpf})`);
       
       res.status(201).json({ message: 'Cadastro realizado com sucesso' });
     } catch (err) {
-      console.error('Erro ao registrar usuário:', err);
+      console.error('Erro ao registrar usu�rio:', err);
       res.status(500).json({ error: 'Erro interno ao realizar cadastro' });
     }
   });
 
   app.post('/api/pontos', (req, res) => {
     try {
-      console.log('Recebendo requisição de ponto:', req.body);
+      console.log('Recebendo requisi��o de ponto:', req.body);
       const { usuario_id, tipo, latitude, longitude } = req.body;
       
       if (!usuario_id || !tipo || latitude === undefined || longitude === undefined) {
@@ -90,23 +96,23 @@ async function startServer() {
 
       const user = db.prepare('SELECT * FROM usuarios WHERE id = ?').get(usuario_id) as any;
       if (!user) {
-        console.error('Usuário não encontrado:', usuario_id);
-        return res.status(404).json({ error: 'Usuário não encontrado' });
+        console.error('Usu�rio n�o encontrado:', usuario_id);
+        return res.status(404).json({ error: 'Usu�rio n�o encontrado' });
       }
 
       const empresa = db.prepare('SELECT * FROM empresas WHERE id = ?').get(user.empresa_id) as any;
       if (!empresa) {
-        console.error('Empresa não encontrada para o usuário:', user.empresa_id);
-        return res.status(404).json({ error: 'Empresa não encontrada' });
+        console.error('Empresa n�o encontrada para o usu�rio:', user.empresa_id);
+        return res.status(404).json({ error: 'Empresa n�o encontrada' });
       }
       
       const distance = getDistanceFromLatLonInM(latitude, longitude, empresa.latitude, empresa.longitude);
-      console.log(`Distância calculada: ${distance}m. Raio permitido: ${empresa.raio_permitido}m`);
+      console.log(`Dist�ncia calculada: ${distance}m. Raio permitido: ${empresa.raio_permitido}m`);
       
       let status = 'VALIDO';
       if (distance > empresa.raio_permitido) {
         status = 'FORA_DO_RAIO';
-        logAuditoria(user.id, user.empresa_id, 'REGISTRO_PONTO_FALHA', `Tentativa de ponto (${tipo}) fora do raio permitido. Distância: ${Math.round(distance)}m`);
+        logAuditoria(user.id, user.empresa_id, 'REGISTRO_PONTO_FALHA', `Tentativa de ponto (${tipo}) fora do raio permitido. Dist�ncia: ${Math.round(distance)}m`);
         // Remove the early return so it actually saves the point as FORA_DO_RAIO
         // return res.status(403).json({ error: 'Fora do raio permitido da empresa', distance, allowed: empresa.raio_permitido });
       }
@@ -121,7 +127,7 @@ async function startServer() {
       console.log('Ponto registrado com sucesso:', result.lastInsertRowid);
       
       if (status === 'FORA_DO_RAIO') {
-        res.status(200).json({ warning: 'Ponto registrado, mas você está fora do raio permitido da empresa.', distance, allowed: empresa.raio_permitido, status: 'success' });
+        res.status(200).json({ warning: 'Ponto registrado, mas voc� est� fora do raio permitido da empresa.', distance, allowed: empresa.raio_permitido, status: 'success' });
       } else {
         res.json({ id: result.lastInsertRowid, status: 'success', data_hora });
       }
@@ -179,14 +185,38 @@ async function startServer() {
   // Vite middleware for development
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
+      root: frontendRoot,
+      configFile: path.join(frontendRoot, 'vite.config.ts'),
       server: { middlewareMode: true },
-      appType: 'spa',
+      appType: 'custom',
     });
     app.use(vite.middlewares);
+
+    app.use('*', async (req, res, next) => {
+      if (req.originalUrl.startsWith('/api')) {
+        return next();
+      }
+
+      try {
+        const indexHtmlPath = path.join(frontendRoot, 'index.html');
+        const template = await readFile(indexHtmlPath, 'utf-8');
+        const html = await vite.transformIndexHtml(req.originalUrl, template);
+        res.status(200).set({ 'Content-Type': 'text/html' }).end(html);
+      } catch (error) {
+        vite.ssrFixStacktrace(error as Error);
+        next(error);
+      }
+    });
+  } else {
+    const distPath = path.join(frontendRoot, 'dist');
+    app.use(express.static(distPath));
+    app.get('*', (_req, res) => {
+      res.sendFile(path.join(distPath, 'index.html'));
+    });
   }
 
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+  app.listen(PORT, HOST, () => {
+    console.log(`Server running on http://${HOST}:${PORT}`);
   });
 }
 

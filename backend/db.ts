@@ -54,7 +54,7 @@ if (empresaCount.count === 0) {
 
   const insertUsuario = db.prepare('INSERT INTO usuarios (nome, email, senha, role, empresa_id) VALUES (?, ?, ?, ?, ?)');
   insertUsuario.run('Admin', 'admin@techcorp.com', 'admin123', 'ADMIN', empresaId);
-  insertUsuario.run('João Silva', 'joao@techcorp.com', 'joao123', 'EMPLOYEE', empresaId);
+  insertUsuario.run('Jo�o Silva', 'joao@techcorp.com', 'joao123', 'EMPLOYEE', empresaId);
   insertUsuario.run('Maria Souza', 'maria@techcorp.com', 'maria123', 'EMPLOYEE', empresaId);
 }
 

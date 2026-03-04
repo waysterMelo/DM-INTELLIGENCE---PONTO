@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { MapPin, Clock, LogOut, User, Users, Activity, AlertCircle, CheckCircle2, Navigation, ShieldAlert, Fingerprint, Mail, Lock, ArrowRight, ShieldCheck, Zap } from 'lucide-react';
 
 export default function App() {
@@ -14,6 +14,17 @@ export default function App() {
   const [cpf, setCpf] = useState('');
   const [empresaId, setEmpresaId] = useState('');
   const [empresas, setEmpresas] = useState<{id: number, nome: string}[]>([]);
+  const [isHovering, setIsHovering] = useState(false);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePos({ x: e.clientX, y: e.clientY });
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
 
   useEffect(() => {
     if (isRegistering) {
@@ -78,226 +89,273 @@ export default function App() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-[#050505] flex items-center justify-center p-4 font-sans text-white">
-        <div className="max-w-6xl w-full grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-center">
-          
-          {/* Left Column - Branding */}
-          <div className="hidden lg:flex flex-col gap-12">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-[#3B5BDB] rounded-xl flex items-center justify-center shadow-lg shadow-[#3B5BDB]/20">
-                <span className="text-white font-bold text-xl tracking-tighter">DM</span>
+      <div className="min-h-screen flex w-full bg-[#050505] font-sans text-slate-300 overflow-hidden relative">
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `
+              @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
+              @keyframes float-delayed { 0% { transform: translateY(0px); } 50% { transform: translateY(-15px); } 100% { transform: translateY(0px); } }
+              @keyframes pulse-slow { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.6; } }
+              .animate-float { animation: float 6s ease-in-out infinite; }
+              .animate-float-delayed { animation: float-delayed 8s ease-in-out infinite 2s; }
+              .animate-pulse-slow { animation: pulse-slow 4s ease-in-out infinite; }
+              .glass-panel {
+                background: rgba(255, 255, 255, 0.03);
+                backdrop-filter: blur(16px);
+                -webkit-backdrop-filter: blur(16px);
+                border: 1px solid rgba(255, 255, 255, 0.05);
+              }
+            `,
+          }}
+        />
+        <div
+          className="pointer-events-none fixed inset-0 z-0 transition-opacity duration-300"
+          style={{
+            background: `radial-gradient(600px circle at ${mousePos.x}px ${mousePos.y}px, rgba(29, 78, 216, 0.12), transparent 40%)`,
+          }}
+        />
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-blue-900/20 blur-[120px] animate-pulse-slow" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[30%] h-[30%] rounded-full bg-indigo-900/20 blur-[100px] animate-pulse-slow" style={{ animationDelay: '2s' }} />
+
+        <div className="flex w-full h-screen z-10 relative">
+          <div className="hidden lg:flex w-1/2 flex-col justify-between p-12 xl:p-20 relative">
+            <div className="flex items-center gap-4 z-20">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-800 flex items-center justify-center shadow-[0_0_30px_rgba(37,99,235,0.3)] border border-blue-400/20 relative group overflow-hidden">
+                <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
+                <span className="text-white font-black text-2xl tracking-tighter">DM</span>
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-white tracking-widest">INTELLIGENCE</h1>
-                <div className="flex items-center gap-2 mt-1">
-                  <div className="w-1.5 h-1.5 rounded-full bg-[#3B5BDB]"></div>
-                  <p className="text-zinc-500 text-[10px] uppercase tracking-widest font-semibold">Motor de Ponto Ativo</p>
+                <h1 className="text-xl font-black text-white tracking-widest uppercase leading-none">Intelligence</h1>
+                <div className="flex items-center gap-2 mt-1.5">
+                  <span className="flex w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em]">Motor de ponto ativo</p>
                 </div>
               </div>
             </div>
 
-            <div className="relative">
-              {/* Decorative circles */}
-              <div className="absolute -inset-24 border border-white/[0.02] rounded-full"></div>
-              <div className="absolute -inset-48 border border-white/[0.02] rounded-full"></div>
-              
-              <div className="relative z-10 bg-[#0a0a0a] border border-white/5 p-6 rounded-2xl w-80 shadow-2xl">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-8 h-8 bg-[#3B5BDB]/10 rounded-lg flex items-center justify-center border border-[#3B5BDB]/20">
-                    <Activity className="w-4 h-4 text-[#3B5BDB]" />
+            <div className="relative w-full max-w-lg mx-auto h-[400px] flex items-center justify-center z-10">
+              <div className="absolute w-[300px] h-[300px] border border-white/5 rounded-full flex items-center justify-center">
+                <div className="w-[200px] h-[200px] border border-white/5 rounded-full border-dashed animate-[spin_60s_linear_infinite]" />
+              </div>
+              <div className="absolute top-10 -left-10 glass-panel p-5 rounded-2xl w-64 shadow-2xl z-20 animate-float">
+                <div className="flex justify-between items-start mb-4">
+                  <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center border border-blue-500/20">
+                    <Activity className="w-4 h-4 text-blue-400" />
+                  </div>
+                  <span className="text-xs font-bold text-green-400 bg-green-400/10 px-2 py-1 rounded-md">99.9%</span>
+                </div>
+                <p className="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">Confianca de geolocalizacao</p>
+                <h3 className="text-2xl font-black text-white font-mono">GPS + WIFI</h3>
+              </div>
+              <div className="absolute bottom-10 -right-4 glass-panel p-5 rounded-2xl w-72 shadow-2xl z-30 animate-float-delayed">
+                <div className="flex items-center gap-3 mb-4 border-b border-white/5 pb-4">
+                  <div className="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20">
+                    <ShieldCheck className="w-4 h-4 text-indigo-400" />
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-white">Geolocalização</p>
-                    <p className="text-[10px] text-zinc-500">Motor de Validação (GPS/WIFI)</p>
+                    <h4 className="text-sm font-bold text-white">Registro seguro</h4>
+                    <p className="text-[10px] text-slate-400">Validacao por raio da empresa</p>
                   </div>
                 </div>
-                <div className="flex justify-between items-end">
-                  <p className="text-xs text-zinc-500 font-medium">Precisão Algorítmica</p>
-                  <p className="text-sm font-bold text-white">99.9%</p>
-                </div>
-                <div className="h-1.5 w-full bg-zinc-900 rounded-full mt-2 overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-[#3B5BDB] to-indigo-400 w-[99.9%] rounded-full"></div>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-slate-400">Confiabilidade</span>
+                    <span className="text-white font-mono">Alta</span>
+                  </div>
+                  <div className="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                    <div className="bg-gradient-to-r from-blue-500 to-indigo-500 w-[92%] h-full rounded-full relative">
+                      <div className="absolute right-0 top-0 bottom-0 w-4 bg-white/50 blur-[2px] animate-pulse" />
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div>
-              <h2 className="text-5xl font-bold tracking-tight leading-[1.1] mb-4">
-                A engenharia de dados<br />
-                <span className="text-[#3B5BDB]">aplicada ao RH.</span>
+            <div className="z-20">
+              <h2 className="text-4xl font-black text-white leading-tight mb-4 tracking-tight">
+                A engenharia de dados
+                <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">aplicada ao RH.</span>
               </h2>
-              <p className="text-zinc-400 text-sm leading-relaxed max-w-md">
-                Desenvolvido pela M Intelligence. Transformamos processos de 
-                gestão de pessoas em decisões exatas através de inteligência 
-                geolocalizada.
+              <p className="text-slate-400 font-medium max-w-md leading-relaxed text-sm">
+                Desenvolvido pela DM Intelligence. Controle de ponto com geolocalizacao, auditoria e visao centralizada.
               </p>
             </div>
           </div>
 
-          {/* Right Column - Login/Register Form */}
-          <div className="w-full max-w-md mx-auto">
-            <div className="bg-[#0a0a0a] border border-white/5 p-8 sm:p-12 rounded-[2rem] shadow-2xl relative overflow-hidden">
-              {/* Subtle top glow */}
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-px bg-gradient-to-r from-transparent via-[#3B5BDB]/50 to-transparent"></div>
-              
-              <div className="flex flex-col items-center mb-10">
-                <div className="w-16 h-16 rounded-2xl border border-white/5 bg-white/[0.02] flex items-center justify-center mb-6 shadow-inner">
-                  {isRegistering ? (
-                    <User className="w-8 h-8 text-[#3B5BDB]" strokeWidth={1.5} />
-                  ) : (
-                    <Fingerprint className="w-8 h-8 text-[#3B5BDB]" strokeWidth={1.5} />
-                  )}
-                </div>
-                <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">
-                  {isRegistering ? 'Solicitar Acesso' : 'Acesso Autorizado'}
-                </h2>
-                <p className="text-sm text-zinc-400 text-center">
-                  {isRegistering ? 'Preencha seus dados para solicitar acesso ao sistema.' : 'Insira as suas credenciais para aceder ao sistema.'}
-                </p>
-              </div>
-              
-              {error && (
-                <div className="bg-rose-500/10 border border-rose-500/20 text-rose-400 p-3 rounded-xl mb-6 text-sm flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4 shrink-0" />
-                  {error}
-                </div>
-              )}
+          <div className="w-full lg:w-1/2 flex items-center justify-center p-6 relative z-20">
+            <div className="w-full max-w-md relative">
+              <div className="glass-panel p-8 sm:p-10 rounded-3xl shadow-2xl relative overflow-hidden">
+                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent opacity-50" />
 
-              {success && (
-                <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 p-3 rounded-xl mb-6 text-sm flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 shrink-0" />
-                  {success}
+                <div className="mb-8 text-center relative">
+                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#0a0a0a] border border-white/5 shadow-inner mb-6 relative">
+                    {isRegistering ? <User className="w-8 h-8 text-blue-500/80" /> : <Fingerprint className="w-8 h-8 text-blue-500/80" />}
+                    <div className="absolute inset-0 rounded-full border border-blue-500/20 animate-[spin_4s_linear_infinite]" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-white tracking-tight mb-2">
+                    {isRegistering ? 'Solicitar acesso' : 'Acesso autorizado'}
+                  </h3>
+                  <p className="text-sm text-slate-400">
+                    {isRegistering ? 'Preencha os dados para criar seu acesso.' : 'Insira as credenciais para entrar no sistema.'}
+                  </p>
                 </div>
-              )}
 
-              {isRegistering ? (
-                <form onSubmit={handleRegister} className="space-y-4">
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                      <User className="h-5 w-5 text-zinc-500" />
-                    </div>
-                    <input 
-                      type="text" 
-                      value={nome}
-                      onChange={(e) => setNome(e.target.value)}
-                      className="w-full pl-11 pr-4 py-3.5 bg-[#050505] border border-white/10 rounded-xl text-white placeholder-zinc-500 focus:ring-1 focus:ring-[#3B5BDB] focus:border-[#3B5BDB] outline-none transition-all text-sm"
-                      placeholder="Nome Completo"
-                      required
-                    />
+                {error && (
+                  <div className="p-4 mb-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-xs font-bold text-center flex items-center gap-2 justify-center animate-pulse">
+                    <AlertCircle className="w-4 h-4" />
+                    {error}
                   </div>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                      <Fingerprint className="h-5 w-5 text-zinc-500" />
-                    </div>
-                    <input 
-                      type="text" 
-                      value={cpf}
-                      onChange={(e) => setCpf(e.target.value.replace(/\D/g, ''))}
-                      className="w-full pl-11 pr-4 py-3.5 bg-[#050505] border border-white/10 rounded-xl text-white placeholder-zinc-500 focus:ring-1 focus:ring-[#3B5BDB] focus:border-[#3B5BDB] outline-none transition-all text-sm"
-                      placeholder="CPF (Apenas números)"
-                      maxLength={11}
-                      required
-                    />
+                )}
+
+                {success && (
+                  <div className="p-4 mb-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-400 text-xs font-bold text-center flex items-center gap-2 justify-center">
+                    <CheckCircle2 className="w-4 h-4" />
+                    {success}
                   </div>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                      <Lock className="h-5 w-5 text-zinc-500" />
+                )}
+
+                {isRegistering ? (
+                  <form onSubmit={handleRegister} className="space-y-4">
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <User className="h-5 w-5 text-slate-500" />
+                      </div>
+                      <input
+                        type="text"
+                        placeholder="Nome completo"
+                        className="block w-full pl-12 pr-4 py-3.5 bg-[#0a0a0a] border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                        value={nome}
+                        onChange={(e) => setNome(e.target.value)}
+                        required
+                      />
                     </div>
-                    <input 
-                      type="password" 
-                      value={senha}
-                      onChange={(e) => setSenha(e.target.value)}
-                      className="w-full pl-11 pr-4 py-3.5 bg-[#050505] border border-white/10 rounded-xl text-white placeholder-zinc-500 focus:ring-1 focus:ring-[#3B5BDB] focus:border-[#3B5BDB] outline-none transition-all text-sm tracking-widest"
-                      placeholder="Senha"
-                      required
-                    />
-                  </div>
-                  <div className="relative">
-                    <select 
-                      value={empresaId}
-                      onChange={(e) => setEmpresaId(e.target.value)}
-                      className="w-full px-4 py-3.5 bg-[#050505] border border-white/10 rounded-xl text-white focus:ring-1 focus:ring-[#3B5BDB] focus:border-[#3B5BDB] outline-none transition-all text-sm appearance-none"
-                      required
+
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <Fingerprint className="h-5 w-5 text-slate-500" />
+                      </div>
+                      <input
+                        type="text"
+                        placeholder="CPF (somente numeros)"
+                        className="block w-full pl-12 pr-4 py-3.5 bg-[#0a0a0a] border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                        value={cpf}
+                        onChange={(e) => setCpf(e.target.value.replace(/\D/g, ''))}
+                        maxLength={11}
+                        required
+                      />
+                    </div>
+
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <Lock className="h-5 w-5 text-slate-500" />
+                      </div>
+                      <input
+                        type="password"
+                        placeholder="Senha"
+                        className="block w-full pl-12 pr-4 py-3.5 bg-[#0a0a0a] border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                        value={senha}
+                        onChange={(e) => setSenha(e.target.value)}
+                        required
+                      />
+                    </div>
+
+                    <div className="relative">
+                      <select
+                        value={empresaId}
+                        onChange={(e) => setEmpresaId(e.target.value)}
+                        className="block w-full px-4 py-3.5 bg-[#0a0a0a] border border-white/10 rounded-xl text-white focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                        required
+                      >
+                        <option value="" disabled>Selecione a empresa</option>
+                        {empresas.map((emp) => (
+                          <option key={emp.id} value={emp.id}>
+                            {emp.nome}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <button
+                      type="submit"
+                      onMouseEnter={() => setIsHovering(true)}
+                      onMouseLeave={() => setIsHovering(false)}
+                      className="w-full relative flex justify-center items-center gap-3 bg-white text-black font-bold py-3.5 px-4 rounded-xl mt-4 transition-all duration-300 hover:scale-[1.02] overflow-hidden group"
                     >
-                      <option value="" disabled>Selecione a Empresa</option>
-                      {empresas.map(emp => (
-                        <option key={emp.id} value={emp.id}>{emp.nome}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <button 
-                    type="submit"
-                    className="w-full bg-[#3B5BDB] hover:bg-[#2A45B0] text-white font-bold py-3.5 rounded-xl transition-colors flex items-center justify-center gap-2 mt-2"
-                  >
-                    Cadastrar
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
-                </form>
-              ) : (
-                <form onSubmit={handleLogin} className="space-y-5">
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                      <Mail className="h-5 w-5 text-zinc-500" />
+                      <span className="relative z-10">Cadastrar</span>
+                      <ArrowRight className={`w-4 h-4 relative z-10 transition-transform duration-300 ${isHovering ? 'translate-x-1' : ''}`} />
+                      <div className="absolute inset-0 bg-gradient-to-r from-slate-200 to-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </button>
+                  </form>
+                ) : (
+                  <form onSubmit={handleLogin} className="space-y-5">
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <Mail className="h-5 w-5 text-slate-500" />
+                      </div>
+                      <input
+                        type="text"
+                        placeholder="Email ou CPF"
+                        className="block w-full pl-12 pr-4 py-3.5 bg-[#0a0a0a] border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                      />
                     </div>
-                    <input 
-                      type="text" 
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="w-full pl-11 pr-4 py-3.5 bg-[#050505] border border-white/10 rounded-xl text-white placeholder-zinc-500 focus:ring-1 focus:ring-[#3B5BDB] focus:border-[#3B5BDB] outline-none transition-all text-sm"
-                      placeholder="Email ou CPF"
-                      required
-                    />
-                  </div>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                      <Lock className="h-5 w-5 text-zinc-500" />
+
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <Lock className="h-5 w-5 text-slate-500" />
+                      </div>
+                      <input
+                        type="password"
+                        placeholder="Senha"
+                        className="block w-full pl-12 pr-4 py-3.5 bg-[#0a0a0a] border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                        value={senha}
+                        onChange={(e) => setSenha(e.target.value)}
+                        required
+                      />
                     </div>
-                    <input 
-                      type="password" 
-                      value={senha}
-                      onChange={(e) => setSenha(e.target.value)}
-                      className="w-full pl-11 pr-4 py-3.5 bg-[#050505] border border-white/10 rounded-xl text-white placeholder-zinc-500 focus:ring-1 focus:ring-[#3B5BDB] focus:border-[#3B5BDB] outline-none transition-all text-sm tracking-widest"
-                      placeholder="••••••••"
-                      required
-                    />
-                  </div>
-                  <button 
-                    type="submit"
-                    className="w-full bg-white hover:bg-zinc-200 text-black font-bold py-3.5 rounded-xl transition-colors flex items-center justify-center gap-2 mt-2"
+
+                    <button
+                      type="submit"
+                      onMouseEnter={() => setIsHovering(true)}
+                      onMouseLeave={() => setIsHovering(false)}
+                      className="w-full relative flex justify-center items-center gap-3 bg-white text-black font-bold py-3.5 px-4 rounded-xl mt-4 transition-all duration-300 hover:scale-[1.02] overflow-hidden group"
+                    >
+                      <span className="relative z-10">Autenticar sistema</span>
+                      <ArrowRight className={`w-4 h-4 relative z-10 transition-transform duration-300 ${isHovering ? 'translate-x-1' : ''}`} />
+                      <div className="absolute inset-0 bg-gradient-to-r from-slate-200 to-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </button>
+                  </form>
+                )}
+
+                <div className="mt-6 text-center">
+                  <button
+                    onClick={() => {
+                      setIsRegistering(!isRegistering);
+                      setError('');
+                      setSuccess('');
+                    }}
+                    className="text-xs font-medium text-blue-400 hover:text-blue-300 transition-colors"
                   >
-                    Autenticar Sistema
-                    <ArrowRight className="w-4 h-4" />
+                    {isRegistering ? 'Ja possui acesso? Entrar' : 'Nao tem conta? Solicitar acesso'}
                   </button>
-                </form>
-              )}
-
-              <div className="mt-8 text-center">
-                <button 
-                  onClick={() => {
-                    setIsRegistering(!isRegistering);
-                    setError('');
-                    setSuccess('');
-                  }}
-                  className="text-sm text-[#3B5BDB] hover:text-indigo-400 font-medium transition-colors"
-                >
-                  {isRegistering ? 'Já tem conta? Fazer Login' : 'Não tem conta? Solicitar Acesso'}
-                </button>
+                </div>
               </div>
-            </div>
 
-            <div className="mt-8 flex flex-col items-center gap-4">
-              <div className="flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/5 bg-white/[0.02] text-xs text-zinc-500 font-medium">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-                Conexão Encriptada (SSL/TLS 1.3)
+              <div className="mt-8 text-center flex flex-col items-center justify-center gap-3">
+                <div className="flex items-center gap-2 text-xs text-slate-500 bg-white/5 px-3 py-1.5 rounded-full border border-white/5">
+                  <ShieldCheck className="w-3 h-3 text-emerald-400" />
+                  <span>Conexao encriptada (SSL/TLS 1.3)</span>
+                </div>
+                <p className="text-xs text-slate-600 font-medium">© {new Date().getFullYear()} DM Intelligence. Todos os direitos reservados.</p>
               </div>
-              <p className="text-[10px] text-zinc-600">
-                © 2026 DM Intelligence. Todos os direitos reservados.
-              </p>
-            </div>
-            
-            <div className="mt-4 text-[10px] text-zinc-700 text-center">
-              <p>Admin: admin@techcorp.com / admin123</p>
-              <p>Func: joao@techcorp.com / joao123</p>
+
+              <div className="mt-4 text-[10px] text-slate-600 text-center">
+                <p>Admin: admin@techcorp.com / admin123</p>
+                <p>Func: joao@techcorp.com / joao123</p>
+              </div>
             </div>
           </div>
         </div>
@@ -848,3 +906,4 @@ function AdminDashboard({ user, onLogout }: { user: any, onLogout: () => void })
     </div>
   );
 }
+

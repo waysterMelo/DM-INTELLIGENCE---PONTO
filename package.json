@@ -4,12 +4,12 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "tsx server.ts",
-    "build": "vite build",
-    "preview": "vite preview",
-    "clean": "rm -rf dist",
-    "lint": "tsc --noEmit",
-    "start": "node server.ts"
+    "dev": "tsx backend/server.ts",
+    "build": "vite build --config frontend/vite.config.ts",
+    "preview": "vite preview --config frontend/vite.config.ts",
+    "clean": "powershell -Command \"if (Test-Path frontend/dist) { Remove-Item -Recurse -Force frontend/dist }\"",
+    "lint": "tsc --noEmit -p frontend/tsconfig.json && tsc --noEmit -p backend/tsconfig.json",
+    "start": "tsx backend/server.ts"
   },
   "dependencies": {
     "@google/genai": "^1.29.0",

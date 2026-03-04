@@ -1,20 +1,35 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# DM Intelligence - Ponto
 
-# Run and deploy your AI Studio app
+Projeto reorganizado com separacao entre frontend e backend.
 
-This contains everything you need to run your app locally.
+## Estrutura
 
-View your app in AI Studio: https://ai.studio/apps/5b6b0e9d-c2a2-4c3b-93a0-653645b50cb3
+```
+.
+|-- backend
+|   |-- db.ts
+|   |-- server.ts
+|   `-- tsconfig.json
+|-- frontend
+|   |-- index.html
+|   |-- src
+|   |-- tsconfig.json
+|   `-- vite.config.ts
+|-- docs
+|-- package.json
+`-- .env.example
+```
 
-## Run Locally
+## Scripts
 
-**Prerequisites:**  Node.js
+- `npm run dev`: inicia backend + middleware do Vite servindo o frontend (padrao em `http://127.0.0.1:5173`).
+- `npm run build`: gera build do frontend em `frontend/dist`.
+- `npm run preview`: preview do build do frontend.
+- `npm run lint`: validacao de tipos em frontend e backend.
+- `npm run start`: inicia servidor Node/Express.
 
+## Execucao local
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+1. `npm install`
+2. Configure variaveis de ambiente em `.env.local` (ex.: `GEMINI_API_KEY`).
+3. `npm run dev`
