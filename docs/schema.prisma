@@ -1,0 +1,67 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Empresa {
+  id             Int       @id @default(autoincrement())
+  nome           String
+  latitude       Float
+  longitude      Float
+  raio_permitido Int       // Raio em metros
+  usuarios       Usuario[]
+  criado_em      DateTime  @default(now())
+  atualizado_em  DateTime  @updatedAt
+
+  @@map("empresas")
+}
+
+model Usuario {
+  id         Int      @id @default(autoincrement())
+  nome       String
+  email      String   @unique
+  senha      String
+  role       Role     @default(EMPLOYEE)
+  empresa_id Int
+  empresa    Empresa  @relation(fields: [empresa_id], references: [id])
+  pontos     Ponto[]
+  criado_em  DateTime @default(now())
+  atualizado_em DateTime @updatedAt
+
+  @@map("usuarios")
+}
+
+model Ponto {
+  id         Int      @id @default(autoincrement())
+  usuario_id Int
+  usuario    Usuario  @relation(fields: [usuario_id], references: [id])
+  tipo       TipoPonto
+  data_hora  DateTime @default(now())
+  latitude   Float
+  longitude  Float
+  status     StatusPonto @default(VALIDO)
+  
+  @@map("pontos")
+}
+
+enum Role {
+  ADMIN
+  EMPLOYEE
+}
+
+enum TipoPonto {
+  ENTRADA
+  SAIDA
+}
+
+enum StatusPonto {
+  VALIDO
+  FORA_DO_RAIO
+}

@@ -1,0 +1,7 @@
+{
+  "name": "PontoGeo",
+  "description": "Sistema de registro de presença com geolocalização",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
